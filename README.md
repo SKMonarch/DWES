@@ -13,6 +13,7 @@
 ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
 ![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![Model](https://img.shields.io/badge/DAW2-Development-red)
 
 ## Índice
 
@@ -40,14 +41,13 @@ Puedes ver una demostración del proyecto accediendo a la aplicación a través 
 - **Funciones Principales:**
   - Crear, editar y eliminar usuarios.
   - Asignación de roles y permisos.
-  - Autenticación con JWT (próximamente).
   - Panel de administración intuitivo.
 
 ## Acceso al Proyecto
 
 Para acceder al proyecto, clona este repositorio e instala las dependencias necesarias:
 ```bash
-git clone https://github.com/usuario/proyecto-gestion-usuarios.git
+git clone https://github.com/SKMonarch/Manual.git
 cd proyecto-gestion-usuarios
 npm install
 
