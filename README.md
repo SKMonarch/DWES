@@ -1,7 +1,6 @@
 # DWES
 
-# Desarrollo Web en Entorno Servidor
-
+# **Sistema de Gestión de Usuarios en Entorno Servidor**
 
 ![servidor](https://github.com/user-attachments/assets/8ef41354-6cb0-4868-b3ba-ed8c09070689)
 
@@ -14,7 +13,6 @@
 ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
 ![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
-
 
 ## Índice
 
@@ -29,37 +27,27 @@
 
 ## Descripción del Proyecto
 
-Este proyecto está diseñado para explorar y dominar el desarrollo web en entorno servidor. Incluye la creación de aplicaciones web robustas utilizando tecnologías modernas y prácticas recomendadas en el desarrollo del lado del servidor.
+El **Sistema de Gestión de Usuarios** es una aplicación web diseñada para administrar usuarios en un entorno servidor. Permite la creación, edición, eliminación y visualización de usuarios en una base de datos MySQL, gestionando su acceso con distintos roles y permisos. El proyecto está enfocado en el uso de **Node.js** y **Express.js** para la lógica del servidor, con una integración eficiente con bases de datos mediante **MySQL**.
 
 ## Estado del Proyecto
 
-Actualmente, el proyecto se encuentra en la fase de [desarrollo/implementación/pruebas/completado]. Se están realizando revisiones y mejoras continuas para garantizar la calidad y funcionalidad del sistema.
+Actualmente, el proyecto se encuentra en fase de **implementación**. Las funcionalidades básicas de creación, edición y eliminación de usuarios ya están operativas. Próximamente se añadirá la autenticación de usuarios y la gestión de roles.
 
 ## Demostración de Funciones y Aplicaciones
 
-Puedes ver una demostración de las principales funciones y aplicaciones del proyecto a través del siguiente enlace: [Enlace a la demostración](url_demostración).
+Puedes ver una demostración del proyecto accediendo a la aplicación a través de este enlace: [Demostración del Sistema de Gestión de Usuarios](url_demostración).
+
+- **Funciones Principales:**
+  - Crear, editar y eliminar usuarios.
+  - Asignación de roles y permisos.
+  - Autenticación con JWT (próximamente).
+  - Panel de administración intuitivo.
 
 ## Acceso al Proyecto
 
-Para acceder al proyecto, visita el siguiente enlace: [Enlace al proyecto](url_acceso_proyecto). 
+Para acceder al proyecto, clona este repositorio e instala las dependencias necesarias:
+```bash
+git clone https://github.com/usuario/proyecto-gestion-usuarios.git
+cd proyecto-gestion-usuarios
+npm install
 
-## Tecnologías Utilizadas
-
-- **Lenguajes de Programación:** JavaScript, Python, PHP, etc.
-- **Frameworks:** Express.js, Django, node.js etc.
-- **Bases de Datos:** MySQL, MongoDB, PostgreSQL, etc.
-- **Herramientas y Servicios:** Docker, GitHub etc.
-
-## Personas Contribuyentes
-
-- Usuario1
-- Usuario2
-
-## Personas Desarrolladoras del Proyecto
-
-- Usuario 1
-- Usuario 2
-
-## Licencia
-
-Este proyecto está licenciado bajo la [Licencia UPM](url_licencia_mit).
