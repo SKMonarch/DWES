@@ -31,7 +31,7 @@
 	while ($row = mysqli_fetch_array($result)){
 		echo '<img src="'.$row[2].'">';
 		echo '<br>';
-		echo '<a href="/detail.php?id='. $row['id'].'"> Ver Detalles</a>';
+		echo '<a href="details.php?id='. $row['id'].'"> Ver Detalles</a>';
 		echo '<br>';
 		echo '<h1>'.$row[1].'</h1>';
 		echo '<br>';
