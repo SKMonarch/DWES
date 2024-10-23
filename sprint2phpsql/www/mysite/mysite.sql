@@ -74,11 +74,11 @@ CREATE TABLE `tJuegos` (
 LOCK TABLES `tJuegos` WRITE;
 /*!40000 ALTER TABLE `tJuegos` DISABLE KEYS */;
 INSERT INTO `tJuegos` VALUES
-(1,'The Legend of Zelda: Breath of the Wild','https://example.com/zelda.jpg','2017-03-03','Aventura'),
-(2,'The Witcher 3: Wild Hunt','https://example.com/witcher.jpg','2015-05-19','RPG'),
-(3,'Red Dead Redemption 2','https://example.com/reddead2.jpg','2018-10-26','Acción/Aventura'),
-(4,'Cyberpunk 2077','https://example.com/cyberpunk.jpg','2020-12-10','RPG'),
-(5,'Super Mario Odyssey','https://example.com/mario.jpg','2017-10-27','Plataformas');
+(1,'The Legend of Zelda: Breath of the Wild','https://www.nintendo.com/eu/media/images/10_share_images/portals_3/2x1_Hub_TheLegendOfZelda_ToTK_image1600w.jpg','2017-03-03','Aventura'),
+(2,'The Witcher 3: Wild Hunt','https://m.media-amazon.com/images/I/91fivU4XsTL._AC_SL1500_.jpg','2015-05-19','RPG'),
+(3,'Red Dead Redemption 2','https://upload.wikimedia.org/wikipedia/commons/2/22/Red_Dead_Redemption_2_Logo.png','2018-10-26','Acción/Aventura'),
+(4,'Cyberpunk 2077','https://www.winp.es/wp-content/uploads/2023/03/Cyberpunk-2077-Phantom-Liberty.png','2020-12-10','RPG'),
+(5,'Super Mario Odyssey','https://i0.wp.com/codigoespagueti.com/wp-content/uploads/2017/05/super-mario-odyssey.png?fit=1080%2C608&ssl=1','2017-10-27','Plataformas');
 /*!40000 ALTER TABLE `tJuegos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -124,4 +124,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-10-21 18:13:54
+-- Dump completed on 2024-10-23 12:59:35
