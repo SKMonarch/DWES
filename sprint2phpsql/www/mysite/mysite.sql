@@ -27,12 +27,13 @@ CREATE TABLE `tComentarios` (
   `comentario` varchar(2000) DEFAULT NULL,
   `usuario_id` int(11) DEFAULT NULL,
   `juego_id` int(11) NOT NULL,
+  `fecha` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `usuario_id` (`usuario_id`),
   KEY `juego_id` (`juego_id`),
   CONSTRAINT `tComentarios_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `tUsuarios` (`id`),
   CONSTRAINT `tComentarios_ibfk_2` FOREIGN KEY (`juego_id`) REFERENCES `tJuegos` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -42,11 +43,19 @@ CREATE TABLE `tComentarios` (
 LOCK TABLES `tComentarios` WRITE;
 /*!40000 ALTER TABLE `tComentarios` DISABLE KEYS */;
 INSERT INTO `tComentarios` VALUES
-(1,'Un juego impresionante, lleno de detalles y libertad de exploración.',1,1),
-(2,'La historia es increíble, y las decisiones afectan el desenlace. Muy recomendado.',2,2),
-(3,'La mejor experiencia de mundo abierto que he tenido. Los paisajes son impresionantes.',3,3),
-(4,'Esperaba más de este juego, pero aún así tiene momentos espectaculares.',4,4),
-(5,'Muy divertido, perfecto para jugar en familia. Los niveles son muy creativos.',5,5);
+(1,'Un juego impresionante, lleno de detalles y libertad de exploración.',1,1,'2024-10-24 09:37:06'),
+(2,'La historia es increíble, y las decisiones afectan el desenlace. Muy recomendado.',2,2,'2024-10-24 09:37:06'),
+(3,'La mejor experiencia de mundo abierto que he tenido. Los paisajes son impresionantes.',3,3,'2024-10-24 09:37:06'),
+(4,'Esperaba más de este juego, pero aún así tiene momentos espectaculares.',4,4,'2024-10-24 09:37:06'),
+(5,'Muy divertido, perfecto para jugar en familia. Los niveles son muy creativos.',5,5,'2024-10-24 09:37:06'),
+(6,'aldgofgdg',NULL,1,'2024-10-24 09:37:06'),
+(7,'asdsad',NULL,1,'2024-10-24 09:37:06'),
+(8,'asdsad',NULL,1,'2024-10-24 09:37:06'),
+(9,'asdsad',NULL,1,'2024-10-24 09:37:06'),
+(10,'asdsad',NULL,1,'2024-10-24 09:37:06'),
+(11,'asdsad',NULL,1,'2024-10-24 09:37:06'),
+(12,'asdsad',NULL,1,'2024-10-24 09:37:06'),
+(13,'este juego es maravilloso',NULL,1,'2024-10-24 09:37:06');
 /*!40000 ALTER TABLE `tComentarios` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -124,4 +133,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-10-23 12:59:35
+-- Dump completed on 2024-10-24 11:53:13
