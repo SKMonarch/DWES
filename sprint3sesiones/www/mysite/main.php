@@ -24,10 +24,39 @@
 		ul{
 			list-style: none; 
 		}
+		.header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .header button {
+            margin-left: 10px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .header button:hover {
+            background-color: #0056b3;
+        }
+        .header button:active {
+            background-color: #004085;
+        }
     </style>
 </head>
 <body>
 <h1>Conexión establecida</h1>
+
+<div class="header">
+    <button onclick="window.location.href='register.html'">Registrarse</button>
+    <button onclick="window.location.href='login.html'">Iniciar Sesión</button>
+    <button onclick="window.location.href='logout.php'">Cerrar Sesión</button>
+</div>
 <?php
 	// Consulta SQL para obtener todos los juegos
 	$query = 'SELECT * FROM tJuegos';
