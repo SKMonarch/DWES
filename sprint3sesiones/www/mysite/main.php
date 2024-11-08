@@ -3,10 +3,11 @@
 	$db = mysqli_connect('localhost','root','1234','web_juegos') or die('Fail');
 ?>
  
-<html>
+<html lang="es">
 <head>
+    <meta charset="UTF-8">
+    <title>Lista de Juegos</title>
     <style>
-        
         body {
             background-color: #333; 
             color: white; 
@@ -15,16 +16,35 @@
         }
         h1 {
             font-size: 2em; 
+            color: #ffcc00;
+        }
+        .lista-juegos {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+        .card {
+            background-color: #444;
+            border-radius: 8px;
+            padding: 20px;
+            width: 250px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0.9;
+        }
+        .card:hover {
+            transform: scale(1.05);
+            opacity: 1;
+            background-color: #555;
         }
         img {
-            width: 200px; 
-            height: auto; 
-            margin: 10px; 
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
         }
-		ul{
-			list-style: none; 
-		}
-		.header {
+        .header {
             display: flex;
             justify-content: flex-end;
             padding: 10px;
@@ -50,39 +70,31 @@
     </style>
 </head>
 <body>
-<h1>Conexión establecida</h1>
 
 <div class="header">
+    <button onclick="window.location.href='cambiarContraseña.html'">Cambiar Contraseña</button>
     <button onclick="window.location.href='register.html'">Registrarse</button>
     <button onclick="window.location.href='login.html'">Iniciar Sesión</button>
     <button onclick="window.location.href='logout.php'">Cerrar Sesión</button>
 </div>
+
+<h1>Lista de Juegos</h1>
+<div class="lista-juegos">
 <?php
-	// Consulta SQL para obtener todos los juegos
 	$query = 'SELECT * FROM tJuegos';
-	$result = mysqli_query($db,$query) or die ('Query Fail');
+	$result = mysqli_query($db, $query) or die('Query Fail');
 	
-	// Iteramos sobre los resultados
 	while ($row = mysqli_fetch_array($result)){
-		// Mostramos la imagen del juego
-		echo '<img src="'.$row[2].'">';
-		echo '<br>';
-		// Enlace a los detalles del juego
-		echo '<a href="details.php?id='. $row['id'].'"> Ver Detalles</a>';
-		echo '<br>';
-		// Nombre del juego
-		echo '<h1>'.$row[1].'</h1>';
-		echo '<br>';
-		// Detalles adicionales del juego
-		echo '<ul>';
-		echo '<li>'.$row[3].'</li>'; // Detalle 1
-		echo '<br>';
-		echo '<li>'.$row[4].'</li>'; // Detalle 2
-		echo '</ul>';
-		echo '<br>';
+		echo '<div class="card">';
+		echo '<img src="' . htmlspecialchars($row['url_imagen']) . '" alt="Imagen del Juego">';
+		echo '<h2>' . htmlspecialchars($row['nombre']) . '</h2>';
+		echo '<p>Fecha de lanzamiento: ' . htmlspecialchars($row['fecha_lanzamiento']) . '</p>';
+		echo '<p>Género: ' . htmlspecialchars($row['genero']) . '</p>';
+		echo '<a href="details.php?id=' . $row['id'] . '">Ver Detalles</a>';
+		echo '</div>';
 	}
-	// Cerramos la conexión a la base de datos
 	mysqli_close($db);
 ?>	
+</div>
 </body>
 </html>

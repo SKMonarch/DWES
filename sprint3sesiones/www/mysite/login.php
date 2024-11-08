@@ -1,13 +1,11 @@
 
 <?php
-// Conectar a la base de datos
+
 $db = mysqli_connect('localhost', 'root', '1234', 'web_juegos') or die('Error de conexión a la base de datos');
 
-// Obtener los datos del formulario
 $email_posted = $_POST['f_email'];
 $password_posted = $_POST['f_password'];
 
-// Verificar si el email existe en la base de datos
 $query = "SELECT id, contraseña FROM tUsuarios WHERE email = '$email_posted'";
 $result = mysqli_query($db, $query) or die('Error en la consulta de inicio de sesión');
 
