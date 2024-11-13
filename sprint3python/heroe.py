@@ -3,7 +3,7 @@ from monstruo import *
 class Heroe:
     def __init__(self,nombre):
         self.nombre = nombre
-        self.ataque = 15    
+        self.ataque = 20    
         self.defensa = 10
         self.defensa_temporal = 5
         self.usando_defensa = False

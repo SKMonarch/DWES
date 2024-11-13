@@ -60,3 +60,4 @@ class Mazmorra:
         print("    Buscando tesoro...    ")
         print("==========================")
         self.tesoro.encontrar_tesoro(self.heroe)
+        print(f"Estado del Héroe Ataque: {self.heroe.ataque} | Defensa: {self.heroe.defensa} | Salud: {self.heroe.salud}")
