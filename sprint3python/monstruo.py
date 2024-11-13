@@ -1,11 +1,11 @@
 from heroe import *
 class Monstruo:
-    def __init__(self,nombre,ataque,defensa,salud,salud_maxima):
+    def __init__(self,nombre,ataque,defensa,salud):
         self.nombre = nombre
         self.ataque = ataque
         self.defensa = defensa
         self.salud = salud
-        self.salud_maxima = salud_maxima
+        
 
 
     def atacar(self, heroe):
@@ -20,6 +20,6 @@ class Monstruo:
     
     def esta_vivo(self):
         vivo = True
-        if self.salud == 0:
+        if self.salud <= 0:
             vivo = False
         return vivo

@@ -17,7 +17,5 @@ class Tesoro:
             heroe.defensa += defensa
             print(f"La defensa de {heroe.nombre} aumenta a  {heroe.defensa}")
         elif beneficio == "vida":
-            heroe.salud += 20
-            if heroe.salud >= heroe.salud_maxima :
-                heroe.salud = heroe.salud_maxima
+            heroe.salud == heroe.salud_maxima
             print(f"La salud de {heroe.nombre} ha sido restaurada a  {heroe.salud}")

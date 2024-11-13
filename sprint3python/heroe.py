@@ -1,12 +1,14 @@
 from monstruo import *
 
 class Heroe:
-    def __init__(self,nombre,ataque,defensa,salud,salud_maxima):
+    def __init__(self,nombre):
         self.nombre = nombre
-        self.ataque = ataque
-        self.defensa = defensa
-        self.salud = salud
-        self.salud_maxima = salud_maxima
+        self.ataque = 15    
+        self.defensa = 10
+        self.defensa_temporal = 5
+        self.usando_defensa = False
+        self.salud = 100
+        self.salud_maxima = 100
 
     def atacar(self, enemigo):
         daño = self.ataque - enemigo.defensa
@@ -24,18 +26,20 @@ class Heroe:
         print(f"Héroe se ha curado. Salud actual: {self.salud}")
 
     def defenderse(self):
-        self.defensa_temporal = 5
-        self.defensa = self.defensa + self.defensa_temporal
-        print(f"El héroe aumenta temporalmente su defensa en 5 puntos para el siguiente ataque.")
+        if not self.usando_defensa:
+            self.defensa += self.defensa_temporal
+            self.usando_defensa = True
+            print(f"El héroe aumenta temporalmente su defensa en 5 puntos para el siguiente ataque.")
 
     def reset_defensa(self):
-        self.defensa -= self.defensa_temporal
-        self.defensa_temporal = 0
-        print(f"La defensa de  {self.nombre} vuelve a la normalidad.")
+        if  self.usando_defensa:
+            self.defensa -= self.defensa_temporal
+            self.usando_defensa = False
+            print(f"La defensa de  {self.nombre} vuelve a la normalidad.")
 
     def esta_vivo(self):
         vivo = True
-        if self.salud == 0:
+        if self.salud <= 0:
             vivo = False
         return vivo
 
