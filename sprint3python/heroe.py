@@ -3,10 +3,10 @@ from monstruo import *
 class Heroe:
     def __init__(self,nombre,ataque,defensa,salud,salud_maxima):
         self.nombre = nombre
-        self.ataque = 15
-        self.defensa = 5
-        self.salud = 50
-        self.salud_maxima = 100
+        self.ataque = ataque
+        self.defensa = defensa
+        self.salud = salud
+        self.salud_maxima = salud_maxima
 
     def atacar(self, enemigo):
         daño = self.ataque - enemigo.defensa
@@ -37,11 +37,7 @@ class Heroe:
         vivo = True
         if self.salud == 0:
             vivo = False
-
         return vivo
 
 
 
-
-
-Heroe.curarse()
