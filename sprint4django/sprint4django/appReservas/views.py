@@ -7,7 +7,7 @@ from DWES.sprint4django.sprint4django.appReservas.models import Evento
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Q
-from .models import Evento
+from .models import Evento, Reserva, Comentario
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 import json
@@ -83,3 +83,83 @@ def actualizar_evento(request, id):
         evento.imagen_url = data.get("imagen_url", evento.imagen_url)
         evento.save()
         return JsonResponse({"mensaje": "Evento actualizado exitosamente"})
+
+@login_required
+@csrf_exempt
+def eliminar_evento(request, id):
+    if request.user.rol != 'organizador':
+        return JsonResponse({"error": "Solo los organizadores pueden eliminar eventos"}, status=403)
+
+    evento = Evento.objects.get(id=id)
+    evento.delete()
+    return JsonResponse({"mensaje": "Evento eliminado exitosamente"})
+
+@login_required
+@csrf_exempt
+def listar_reservas(request):
+    reservas = Reserva.objects.filter(usuario=request.user)
+    data = [{"id": r.id, "evento": r.evento.titulo, "entradas": r.entradas, "estado": r.estado} for r in reservas]
+    return JsonResponse(data, safe=False)
+
+
+@login_required
+@csrf_exempt
+def crear_reserva(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        evento = Evento.objects.get(id=data["evento_id"])
+
+        if evento.capacidad < data["entradas"]:
+            return JsonResponse({"error": "No hay suficientes entradas disponibles"}, status=400)
+
+        reserva = Reserva.objects.create(
+            usuario=request.user,
+            evento=evento,
+            entradas=data["entradas"],
+            estado="pendiente"
+        )
+
+        evento.capacidad -= data["entradas"]
+        evento.save()
+
+        return JsonResponse({"id": reserva.id, "mensaje": "Reserva creada exitosamente"})
+
+
+@login_required
+@csrf_exempt
+def actualizar_reserva(request, id):
+    if request.user.rol != 'organizador':
+        return JsonResponse({"error": "Solo los organizadores pueden actualizar reservas"}, status=403)
+
+    reserva = Reserva.objects.get(id=id)
+
+    if request.method in ["PUT", "PATCH"]:
+        data = json.loads(request.body)
+        reserva.estado = data.get("estado", reserva.estado)
+        reserva.save()
+        return JsonResponse({"mensaje": "Estado de la reserva actualizado"})
+
+
+@login_required
+@csrf_exempt
+def cancelar_reserva(request, id):
+    reserva = Reserva.objects.get(id=id)
+
+    if reserva.usuario != request.user:
+        return JsonResponse({"error": "No puedes cancelar una reserva que no te pertenece"}, status=403)
+
+    reserva.estado = "cancelada"
+    reserva.save()
+
+    reserva.evento.capacidad += reserva.entradas
+    reserva.evento.save()
+
+    return JsonResponse({"mensaje": "Reserva cancelada exitosamente"})
+
+
+
+@csrf_exempt
+def listar_comentarios(request, evento_id):
+    comentarios = Comentario.objects.filter(evento_id=evento_id)
+    data = [{"id": c.id, "usuario": c.usuario.username, "texto": c.texto, "fecha": c.fecha_creacion} for c in comentarios]
+    return JsonResponse(data, safe=False)
