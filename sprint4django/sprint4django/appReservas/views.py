@@ -9,7 +9,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from .models import Evento
 from django.views.decorators.csrf import csrf_exempt
-
+from django.contrib.auth.decorators import login_required
+import json
 
 @csrf_exempt
 def listar_eventos(request):
@@ -47,5 +48,38 @@ def listar_eventos(request):
 
     return JsonResponse(data, safe=False)
 
+@login_required
+@csrf_exempt
+def crear_evento(request):
+    if request.method == "POST":
+        if request.user.rol != 'organizador':
+            return JsonResponse({"error": "Solo los organizadores pueden crear eventos"}, status=403)
 
+        data = json.loads(request.body)
+        evento = Evento.objects.create(
+            organizador=request.user,
+            titulo=data["titulo"],
+            descripcion=data["descripcion"],
+            fecha_hora=data["fecha_hora"],
+            capacidad=data["capacidad"],
+            imagen_url=data.get("imagen_url", '')
+        )
+        return JsonResponse({"id": evento.id, "mensaje": "Evento creado exitosamente"})
 
+@login_required
+@csrf_exempt
+def actualizar_evento(request, id):
+    if request.user.rol != 'organizador':
+        return JsonResponse({"error": "Solo los organizadores pueden actualizar eventos"}, status=403)
+
+    evento = Evento.objects.get(id=id)
+
+    if request.method in ["PUT", "PATCH"]:
+        data = json.loads(request.body)
+        evento.titulo = data.get("titulo", evento.titulo)
+        evento.descripcion = data.get("descripcion", evento.descripcion)
+        evento.fecha_hora = data.get("fecha_hora", evento.fecha_hora)
+        evento.capacidad = data.get("capacidad", evento.capacidad)
+        evento.imagen_url = data.get("imagen_url", evento.imagen_url)
+        evento.save()
+        return JsonResponse({"mensaje": "Evento actualizado exitosamente"})
