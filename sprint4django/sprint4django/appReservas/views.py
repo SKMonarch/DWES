@@ -7,9 +7,10 @@ from DWES.sprint4django.sprint4django.appReservas.models import Evento
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Q
-from .models import Evento, Reserva, Comentario
+from .models import Evento, Reserva, Comentario, Usuario
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login
 import json
 
 @csrf_exempt
@@ -20,7 +21,7 @@ def listar_eventos(request):
     limite = int(request.GET.get('limite', 5))
     pagina = int(request.GET.get('pagina', 1))
 
-    eventos = Evento.objects.all()
+    eventos = Evento.objects.select_related("organizador").all()
 
     if titulo:
         eventos = eventos.filter(titulo__icontains=titulo)
@@ -42,8 +43,16 @@ def listar_eventos(request):
         "current_page": pagina,
         "next": pagina + 1 if eventos_pagina.has_next() else None,
         "previous": pagina - 1 if eventos_pagina.has_previous() else None,
-        "results": [{"id": e.id, "titulo": e.titulo, "descripcion": e.descripcion, "fecha_hora": e.fecha_hora} for e in
-                    eventos_pagina]
+        "results": [
+            {
+                "id": e.id,
+                "titulo": e.titulo,
+                "descripcion": e.descripcion,
+                "fecha_hora": e.fecha_hora,
+                "organizador": e.organizador.username
+            }
+            for e in eventos_pagina
+        ]
     }
 
     return JsonResponse(data, safe=False)
@@ -69,10 +78,10 @@ def crear_evento(request):
 @login_required
 @csrf_exempt
 def actualizar_evento(request, id):
-    if request.user.rol != 'organizador':
-        return JsonResponse({"error": "Solo los organizadores pueden actualizar eventos"}, status=403)
-
     evento = Evento.objects.get(id=id)
+
+    if request.user.rol != 'organizador' or evento.organizador != request.user:
+        return JsonResponse({"error": "Solo los organizadores pueden actualizar eventos"}, status=403)
 
     if request.method in ["PUT", "PATCH"]:
         data = json.loads(request.body)
@@ -87,20 +96,29 @@ def actualizar_evento(request, id):
 @login_required
 @csrf_exempt
 def eliminar_evento(request, id):
-    if request.user.rol != 'organizador':
+    evento = Evento.objects.get(id=id)
+
+    if request.user.rol != 'organizador' or evento.organizador != request.user:
         return JsonResponse({"error": "Solo los organizadores pueden eliminar eventos"}, status=403)
 
-    evento = Evento.objects.get(id=id)
     evento.delete()
     return JsonResponse({"mensaje": "Evento eliminado exitosamente"})
 
 @login_required
 @csrf_exempt
 def listar_reservas(request):
-    reservas = Reserva.objects.filter(usuario=request.user)
-    data = [{"id": r.id, "evento": r.evento.titulo, "entradas": r.entradas, "estado": r.estado} for r in reservas]
-    return JsonResponse(data, safe=False)
+    reservas = Reserva.objects.filter(usuario=request.user).select_related("evento")
 
+    data = [
+        {
+            "id": r.id,
+            "evento": r.evento.titulo,
+            "entradas": r.entradas,
+            "estado": r.estado
+        }
+        for r in reservas
+    ]
+    return JsonResponse(data, safe=False)
 
 @login_required
 @csrf_exempt
@@ -124,14 +142,13 @@ def crear_reserva(request):
 
         return JsonResponse({"id": reserva.id, "mensaje": "Reserva creada exitosamente"})
 
-
 @login_required
 @csrf_exempt
 def actualizar_reserva(request, id):
+    reserva = Reserva.objects.get(id=id)
+
     if request.user.rol != 'organizador':
         return JsonResponse({"error": "Solo los organizadores pueden actualizar reservas"}, status=403)
-
-    reserva = Reserva.objects.get(id=id)
 
     if request.method in ["PUT", "PATCH"]:
         data = json.loads(request.body)
@@ -139,11 +156,10 @@ def actualizar_reserva(request, id):
         reserva.save()
         return JsonResponse({"mensaje": "Estado de la reserva actualizado"})
 
-
 @login_required
 @csrf_exempt
 def cancelar_reserva(request, id):
-    reserva = Reserva.objects.get(id=id)
+    reserva = Reserva.objects.select_related("evento").get(id=id)
 
     if reserva.usuario != request.user:
         return JsonResponse({"error": "No puedes cancelar una reserva que no te pertenece"}, status=403)
@@ -156,10 +172,51 @@ def cancelar_reserva(request, id):
 
     return JsonResponse({"mensaje": "Reserva cancelada exitosamente"})
 
-
-
 @csrf_exempt
 def listar_comentarios(request, evento_id):
-    comentarios = Comentario.objects.filter(evento_id=evento_id)
-    data = [{"id": c.id, "usuario": c.usuario.username, "texto": c.texto, "fecha": c.fecha_creacion} for c in comentarios]
+    comentarios = Comentario.objects.filter(evento_id=evento_id).select_related("usuario")
+
+    data = [
+        {
+            "id": c.id,
+            "usuario": c.usuario.username,
+            "texto": c.texto,
+            "fecha": c.fecha_creacion
+        }
+        for c in comentarios
+    ]
     return JsonResponse(data, safe=False)
+
+@login_required
+@csrf_exempt
+def crear_comentario(request, evento_id):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        evento = Evento.objects.get(id=evento_id)
+
+        comentario = Comentario.objects.create(
+            usuario=request.user,
+            evento=evento,
+            texto=data["texto"]
+        )
+
+        return JsonResponse({"id": comentario.id, "mensaje": "Comentario creado exitosamente"})
+
+@csrf_exempt
+def login_usuario(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        usuario = authenticate(username=data['username'], password=data['password'])
+
+        if usuario is not None:
+            login(request, usuario)
+            return JsonResponse({"mensaje": "Login exitoso"})
+        else:
+            return JsonResponse({"error": "Credenciales incorrectas"}, status=400)
+
+@csrf_exempt
+def registrar_usuario(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        usuario = Usuario.objects.create_user(username=data["username"], password=data["password"])
+        return JsonResponse({"mensaje": "Usuario registrado exitosamente"})
