@@ -1,6 +1,5 @@
 from django.shortcuts import render
 
-from DWES.sprint4django.sprint4django.appReservas.models import Evento
 
 
 # Create your views here.
