@@ -201,6 +201,8 @@ def crear_comentario(request, evento_id):
 
         return JsonResponse({"id": comentario.id, "mensaje": "Comentario creado exitosamente"})
 
+
+
 @csrf_exempt
 def login_usuario(request):
     if request.method == "POST":
@@ -212,6 +214,9 @@ def login_usuario(request):
             return JsonResponse({"mensaje": "Login exitoso"})
         else:
             return JsonResponse({"error": "Credenciales incorrectas"}, status=400)
+
+    return JsonResponse({"mensaje": "Envía un POST con las credenciales para iniciar sesión."}, status=405)
+
 
 @csrf_exempt
 def registrar_usuario(request):
