@@ -6,8 +6,8 @@ from django.db import models
 
 class Usuario(AbstractUser):
     ROLES = [
-        ('organizador', 'Organizador'),
-        ('participante', 'Participante'),
+        ('organizador', 'organizador'),
+        ('participante', 'participante'),
     ]
     rol = models.CharField(max_length=20, choices=ROLES, default='participante')
     biografia = models.TextField(blank=True, null=True)

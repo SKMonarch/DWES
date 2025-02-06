@@ -3,224 +3,267 @@ from django.shortcuts import render
 
 
 # Create your views here.
-from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, BasePermission
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.models import Token
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_403_FORBIDDEN
 from django.core.paginator import Paginator
-from django.db.models import Q
-from .models import Evento, Reserva, Comentario, Usuario
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, login
-import json
+from .models import Evento, Reserva, Comentario, Usuario
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
-@csrf_exempt
-def listar_eventos(request):
-    titulo = request.GET.get('titulo', '')
-    fecha = request.GET.get('fecha', '')
-    orden = request.GET.get('orden', 'fecha_hora')
-    limite = int(request.GET.get('limite', 5))
-    pagina = int(request.GET.get('pagina', 1))
 
-    eventos = Evento.objects.select_related("organizador").all()
 
-    if titulo:
-        eventos = eventos.filter(titulo__icontains=titulo)
 
-    if fecha:
-        eventos = eventos.filter(fecha_hora__date=fecha)
 
-    eventos = eventos.order_by(orden)
 
-    paginator = Paginator(eventos, limite)
-    try:
-        eventos_pagina = paginator.page(pagina)
-    except:
-        return JsonResponse({"error": "Página no válida"}, status=400)
 
-    data = {
-        "count": paginator.count,
-        "total_pages": paginator.num_pages,
-        "current_page": pagina,
-        "next": pagina + 1 if eventos_pagina.has_next() else None,
-        "previous": pagina - 1 if eventos_pagina.has_previous() else None,
-        "results": [
-            {
-                "id": e.id,
-                "titulo": e.titulo,
-                "descripcion": e.descripcion,
-                "fecha_hora": e.fecha_hora,
-                "organizador": e.organizador.username
-            }
-            for e in eventos_pagina
+# Permisos personalizados
+class EsOrganizador(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.rol == 'organizador'
+
+class EsParticipante(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.rol == 'participante'
+
+# Autenticación y Registro de Usuarios
+class LoginAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        usuario = authenticate(username=username, password=password)
+        if usuario:
+            token, _ = Token.objects.get_or_create(user=usuario)
+            return Response({"token": token.key}, status=HTTP_200_OK)
+        return Response({"error": "Credenciales incorrectas"}, status=HTTP_400_BAD_REQUEST)
+
+class RegistrarUsuarioAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        rol = request.data.get('rol', 'participante')
+        if not username or not password or rol not in ['organizador', 'participante']:
+            return Response({"error": "Datos inválidos"}, status=HTTP_400_BAD_REQUEST)
+        usuario = Usuario.objects.create_user(username=username, password=password, rol=rol)
+        Token.objects.create(user=usuario)
+        return Response({"mensaje": "Usuario registrado exitosamente"}, status=HTTP_201_CREATED)
+
+# Vistas para Eventos
+
+class ListarEventosAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Listar eventos.",
+        manual_parameters=[
+            openapi.Parameter('titulo', openapi.IN_QUERY, description="Filtrar por título del evento",
+                              type=openapi.TYPE_STRING),
+            openapi.Parameter('fecha', openapi.IN_QUERY, description="Filtrar por fecha del evento (YYYY-MM-DD)",
+                              type=openapi.TYPE_STRING),
+            openapi.Parameter('orden', openapi.IN_QUERY, description="Ordenar por un campo (por defecto: fecha_hora)",
+                              type=openapi.TYPE_STRING, default='fecha_hora'),
+            openapi.Parameter('limite', openapi.IN_QUERY, description="Cantidad de eventos por página (por defecto: 5)",
+                              type=openapi.TYPE_INTEGER, default=5),
+            openapi.Parameter('pagina', openapi.IN_QUERY, description="Número de página (por defecto: 1)",
+                              type=openapi.TYPE_INTEGER, default=1),
         ]
-    }
+    )
 
-    return JsonResponse(data, safe=False)
+    def get(self, request):
+        titulo = request.GET.get('titulo', '')
+        fecha = request.GET.get('fecha', '')
+        orden = request.GET.get('orden', 'fecha_hora')
+        limite = int(request.GET.get('limite', 5))
+        pagina = int(request.GET.get('pagina', 1))
 
-@login_required
-@csrf_exempt
-def crear_evento(request):
-    if request.method == "POST":
-        if request.user.rol != 'organizador':
-            return JsonResponse({"error": "Solo los organizadores pueden crear eventos"}, status=403)
+        eventos = Evento.objects.select_related("organizador").all()
+        if titulo:
+            eventos = eventos.filter(titulo__icontains=titulo)
+        if fecha:
+            eventos = eventos.filter(fecha_hora__date=fecha)
+        eventos = eventos.order_by(orden)
 
-        data = json.loads(request.body)
+        paginador = Paginator(eventos, limite)
+        try:
+            eventos_pagina = paginador.page(pagina)
+        except:
+            return Response({"error": "Página no válida"}, status=HTTP_400_BAD_REQUEST)
+
+        datos = {
+            "total": paginador.count,
+            "paginas": paginador.num_pages,
+            "pagina_actual": pagina,
+            "siguiente": pagina + 1 if eventos_pagina.has_next() else None,
+            "anterior": pagina - 1 if eventos_pagina.has_previous() else None,
+            "resultados": [
+                {
+                    "id": evento.id,
+                    "titulo": evento.titulo,
+                    "descripcion": evento.descripcion,
+                    "fecha_hora": evento.fecha_hora,
+                    "organizador": evento.organizador.username
+                }
+                for evento in eventos_pagina
+            ]
+        }
+        return Response(datos)
+
+class CrearEventoAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, EsOrganizador]
+
+    def post(self, request):
+        datos = request.data
         evento = Evento.objects.create(
             organizador=request.user,
-            titulo=data["titulo"],
-            descripcion=data["descripcion"],
-            fecha_hora=data["fecha_hora"],
-            capacidad=data["capacidad"],
-            imagen_url=data.get("imagen_url", '')
+            titulo=datos.get("titulo"),
+            descripcion=datos.get("descripcion"),
+            fecha_hora=datos.get("fecha_hora"),
+            capacidad=datos.get("capacidad"),
+            imagen_url=datos.get("imagen_url", '')
         )
-        return JsonResponse({"id": evento.id, "mensaje": "Evento creado exitosamente"})
+        return Response({"id": evento.id, "mensaje": "Evento creado exitosamente"}, status=HTTP_201_CREATED)
 
-@login_required
-@csrf_exempt
-def actualizar_evento(request, id):
-    evento = Evento.objects.get(id=id)
+class ActualizarEventoAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, EsOrganizador]
 
-    if request.user.rol != 'organizador' or evento.organizador != request.user:
-        return JsonResponse({"error": "Solo los organizadores pueden actualizar eventos"}, status=403)
-
-    if request.method in ["PUT", "PATCH"]:
-        data = json.loads(request.body)
-        evento.titulo = data.get("titulo", evento.titulo)
-        evento.descripcion = data.get("descripcion", evento.descripcion)
-        evento.fecha_hora = data.get("fecha_hora", evento.fecha_hora)
-        evento.capacidad = data.get("capacidad", evento.capacidad)
-        evento.imagen_url = data.get("imagen_url", evento.imagen_url)
+    def put(self, request, id):
+        evento = get_object_or_404(Evento, id=id)
+        if evento.organizador != request.user:
+            return Response({"error": "No tienes permiso para actualizar este evento"}, status=HTTP_403_FORBIDDEN)
+        datos = request.data
+        evento.titulo = datos.get("titulo", evento.titulo)
+        evento.descripcion = datos.get("descripcion", evento.descripcion)
+        evento.fecha_hora = datos.get("fecha_hora", evento.fecha_hora)
+        evento.capacidad = datos.get("capacidad", evento.capacidad)
+        evento.imagen_url = datos.get("imagen_url", evento.imagen_url)
         evento.save()
-        return JsonResponse({"mensaje": "Evento actualizado exitosamente"})
+        return Response({"mensaje": "Evento actualizado exitosamente"})
 
-@login_required
-@csrf_exempt
-def eliminar_evento(request, id):
-    evento = Evento.objects.get(id=id)
+    def patch(self, request, id):
+        return self.put(request, id)
 
-    if request.user.rol != 'organizador' or evento.organizador != request.user:
-        return JsonResponse({"error": "Solo los organizadores pueden eliminar eventos"}, status=403)
+class EliminarEventoAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, EsOrganizador]
 
-    evento.delete()
-    return JsonResponse({"mensaje": "Evento eliminado exitosamente"})
+    def delete(self, request, id):
+        evento = get_object_or_404(Evento, id=id)
+        if evento.organizador != request.user:
+            return Response({"error": "No tienes permiso para eliminar este evento"}, status=HTTP_403_FORBIDDEN)
+        evento.delete()
+        return Response({"mensaje": "Evento eliminado exitosamente"})
 
-@login_required
-@csrf_exempt
-def listar_reservas(request):
-    reservas = Reserva.objects.filter(usuario=request.user).select_related("evento")
+# Vistas para Reservas
 
-    data = [
-        {
-            "id": r.id,
-            "evento": r.evento.titulo,
-            "entradas": r.entradas,
-            "estado": r.estado
-        }
-        for r in reservas
-    ]
-    return JsonResponse(data, safe=False)
+class ListarReservasAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-@login_required
-@csrf_exempt
-def crear_reserva(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        evento = Evento.objects.get(id=data["evento_id"])
+    def get(self, request):
+        reservas = Reserva.objects.filter(usuario=request.user).select_related("evento")
+        datos = [
+            {
+                "id": reserva.id,
+                "evento": reserva.evento.titulo,
+                "entradas": reserva.entradas,
+                "estado": reserva.estado
+            }
+            for reserva in reservas
+        ]
+        return Response(datos)
 
-        if evento.capacidad < data["entradas"]:
-            return JsonResponse({"error": "No hay suficientes entradas disponibles"}, status=400)
+class CrearReservaAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        datos = request.data
+        evento = get_object_or_404(Evento, id=datos.get("evento_id"))
+        if evento.capacidad < datos.get("entradas", 0):
+            return Response({"error": "No hay suficientes entradas disponibles"}, status=HTTP_400_BAD_REQUEST)
         reserva = Reserva.objects.create(
             usuario=request.user,
             evento=evento,
-            entradas=data["entradas"],
+            entradas=datos.get("entradas"),
             estado="pendiente"
         )
-
-        evento.capacidad -= data["entradas"]
+        evento.capacidad -= datos.get("entradas")
         evento.save()
+        return Response({"id": reserva.id, "mensaje": "Reserva creada exitosamente"}, status=HTTP_201_CREATED)
 
-        return JsonResponse({"id": reserva.id, "mensaje": "Reserva creada exitosamente"})
+class ActualizarReservaAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, EsOrganizador]
 
-@login_required
-@csrf_exempt
-def actualizar_reserva(request, id):
-    reserva = Reserva.objects.get(id=id)
-
-    if request.user.rol != 'organizador':
-        return JsonResponse({"error": "Solo los organizadores pueden actualizar reservas"}, status=403)
-
-    if request.method in ["PUT", "PATCH"]:
-        data = json.loads(request.body)
-        reserva.estado = data.get("estado", reserva.estado)
+    def put(self, request, id):
+        reserva = get_object_or_404(Reserva, id=id)
+        datos = request.data
+        reserva.estado = datos.get("estado", reserva.estado)
         reserva.save()
-        return JsonResponse({"mensaje": "Estado de la reserva actualizado"})
+        return Response({"mensaje": "Estado de la reserva actualizado"})
 
-@login_required
-@csrf_exempt
-def cancelar_reserva(request, id):
-    reserva = Reserva.objects.select_related("evento").get(id=id)
+    def patch(self, request, id):
+        return self.put(request, id)
 
-    if reserva.usuario != request.user:
-        return JsonResponse({"error": "No puedes cancelar una reserva que no te pertenece"}, status=403)
+class CancelarReservaAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-    reserva.estado = "cancelada"
-    reserva.save()
+    def delete(self, request, id):
+        reserva = get_object_or_404(Reserva.objects.select_related("evento"), id=id)
+        if reserva.usuario != request.user:
+            return Response({"error": "No puedes cancelar una reserva que no te pertenece"}, status=HTTP_403_FORBIDDEN)
+        reserva.estado = "cancelada"
+        reserva.save()
+        reserva.evento.capacidad += reserva.entradas
+        reserva.evento.save()
+        return Response({"mensaje": "Reserva cancelada exitosamente"})
 
-    reserva.evento.capacidad += reserva.entradas
-    reserva.evento.save()
+# Vistas para Comentarios
 
-    return JsonResponse({"mensaje": "Reserva cancelada exitosamente"})
+class ListarComentariosAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-@csrf_exempt
-def listar_comentarios(request, evento_id):
-    comentarios = Comentario.objects.filter(evento_id=evento_id).select_related("usuario")
+    def get(self, request, evento_id):
+        comentarios = Comentario.objects.filter(evento_id=evento_id).select_related("usuario")
+        datos = [
+            {
+                "id": comentario.id,
+                "usuario": comentario.usuario.username,
+                "texto": comentario.texto,
+                "fecha": comentario.fecha_creacion
+            }
+            for comentario in comentarios
+        ]
+        return Response(datos)
 
-    data = [
-        {
-            "id": c.id,
-            "usuario": c.usuario.username,
-            "texto": c.texto,
-            "fecha": c.fecha_creacion
-        }
-        for c in comentarios
-    ]
-    return JsonResponse(data, safe=False)
+class CrearComentarioAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-@login_required
-@csrf_exempt
-def crear_comentario(request, evento_id):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        evento = Evento.objects.get(id=evento_id)
-
+    def post(self, request, evento_id):
+        datos = request.data
+        evento = get_object_or_404(Evento, id=evento_id)
         comentario = Comentario.objects.create(
             usuario=request.user,
             evento=evento,
-            texto=data["texto"]
+            texto=datos.get("texto")
         )
-
-        return JsonResponse({"id": comentario.id, "mensaje": "Comentario creado exitosamente"})
-
-
-
-@csrf_exempt
-def login_usuario(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        usuario = authenticate(username=data['username'], password=data['password'])
-
-        if usuario is not None:
-            login(request, usuario)
-            return JsonResponse({"mensaje": "Login exitoso"})
-        else:
-            return JsonResponse({"error": "Credenciales incorrectas"}, status=400)
-
-    return JsonResponse({"mensaje": "Envía un POST con las credenciales para iniciar sesión."}, status=405)
-
-
-@csrf_exempt
-def registrar_usuario(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        usuario = Usuario.objects.create_user(username=data["username"], password=data["password"])
-        return JsonResponse({"mensaje": "Usuario registrado exitosamente"})
+        return Response({"id": comentario.id, "mensaje": "Comentario creado exitosamente"}, status=HTTP_201_CREATED)
