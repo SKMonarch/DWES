@@ -1,0 +1,36 @@
+{% extends 'appReservas/main.html' %}
+
+{% block title %}{{ evento.titulo }} - Gestión de Eventos{% endblock %}
+
+{% block content %}
+    <h2>{{ evento.titulo }}</h2>
+    <p>{{ evento.descripcion }}</p>
+    <p>Fecha: {{ evento.fecha_hora }}</p>
+    <p>Capacidad: {{ evento.capacidad }}</p>
+    <img src="{{ evento.imagen_url }}" alt="{{ evento.titulo }}">
+
+    <h3>Reservar</h3>
+    <form method="post" action="{% url 'crear_reserva' evento.id %}">
+        {% csrf_token %}
+        <label for="tickets">Número de entradas:</label>
+        <input type="number" id="tickets" name="tickets" min="1" max="{{ evento.capacidad }}" required>
+        <button type="submit">Reservar</button>
+    </form>
+
+    <h3>Comentarios</h3>
+    <ul>
+        {% for comentario in evento.comentarios.all %}
+            <li>
+                <p>{{ comentario.texto }}</p>
+                <p>Publicado por: {{ comentario.usuario.username }} el {{ comentario.fecha_creacion }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <form method="post" action="{% url 'crear_comentario' evento.id %}">
+        {% csrf_token %}
+        <label for="comment">Deja un comentario:</label>
+        <textarea id="comment" name="texto" required></textarea>
+        <button type="submit">Publicar</button>
+    </form>
+{% endblock %}

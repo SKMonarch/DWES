@@ -1,9 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}GAMES EVENTS{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
-    {% block content %}{% endblock %}
+    <header>
+        <h1>Gestión de Eventos</h1>
+        <nav>
+            <a href="{% url 'listar_eventos' %}">Inicio</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'user_panel' %}">Panel de Usuario</a>
+                <a href="{% url 'logout' %}">Cerrar Sesión</a>
+            {% else %}
+                <a href="{% url 'login_usuario' %}">Iniciar Sesión</a>
+                <a href="{% url 'registro_usuario' %}">Registrarse</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2003 Gestión de Eventos</p>
+    </footer>
 </body>
 </html>

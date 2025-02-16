@@ -39,7 +39,10 @@ schema_view = get_schema_view(
 urlpatterns = [
     # Panel de Administración (si lo necesitas)
     path('admin/', admin.site.urls),
-
+    # views dinámicas Semana4
+    path('', views.index, name='index'),
+    path('evento/<int:evento_id>/', views.event_detail, name='event_detail'),
+    path('user/panel/', views.user_panel, name='user_panel'),
 
     # Usuarios
     path('login/', views.LoginAPIView.as_view(), name='login_usuario'),

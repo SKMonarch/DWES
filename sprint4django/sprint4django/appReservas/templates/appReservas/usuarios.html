@@ -1,0 +1,17 @@
+{% extends 'appReservas/main.html' %}
+
+{% block title %}Panel de Usuario - Gestión de Eventos{% endblock %}
+
+{% block content %}
+    <h2>Mis Reservas</h2>
+    <ul>
+        {% for reserva in reservas %}
+            <li>
+                <p>Evento: {{ reserva.evento.titulo }}</p>
+                <p>Entradas: {{ reserva.entradas }}</p>
+                <p>Estado: {{ reserva.estado }}</p>
+                <a href="{% url 'cancelar_reserva' reserva.id %}">Cancelar Reserva</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

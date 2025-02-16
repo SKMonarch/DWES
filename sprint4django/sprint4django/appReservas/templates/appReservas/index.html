@@ -1,0 +1,16 @@
+{% extends 'appReservas/main.html' %}
+
+{% block title %}Inicio - Gestión de Eventos{% endblock %}
+
+{% block content %}
+    <h2>Eventos Disponibles</h2>
+    <ul>
+        {% for evento in eventos %}
+            <li>
+                <a href="{% url 'event_detail' evento.id %}">{{ evento.titulo }}</a>
+                <p>{{ evento.descripcion }}</p>
+                <p>Fecha: {{ evento.fecha_hora }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
