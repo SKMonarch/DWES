@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404,redirect
 from django.contrib.auth.decorators import login_required
 
 
@@ -26,9 +26,33 @@ from django.contrib.auth.decorators import login_required
 def index(request):
     eventos = Evento.objects.all()
     return render(request, 'appReservas/index.html', {'eventos': eventos})
-def event_detail(request, evento_id):
+
+
+@login_required
+def crear_reserva(request, evento_id):
     evento = get_object_or_404(Evento, id=evento_id)
-    return render(request, 'appReservas/event_detail.html', {'evento': evento})
+
+    if request.method == 'POST':
+        entradas = int(request.POST.get('tickets', 0))
+
+        if entradas > 0 and entradas <= evento.capacidad:
+            reserva = Reserva.objects.create(
+                usuario=request.user,
+                evento=evento,
+                entradas=entradas,
+                estado='pendiente'
+            )
+            evento.capacidad -= entradas
+            evento.save()
+            return redirect('event_detail', evento_id=evento.id)
+        else:
+            # Manejar el caso en que no haya suficientes entradas
+            return render(request, 'appReservas/event_detail.html', {
+                'evento': evento,
+                'error': 'No hay suficientes entradas disponibles.'
+            })
+
+    return redirect('event_detail', evento_id=evento.id)
 @login_required
 def user_panel(request):
     reservas = Reserva.objects.filter(usuario=request.user)
