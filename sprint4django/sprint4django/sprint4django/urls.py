@@ -40,6 +40,7 @@ urlpatterns = [
     # Panel de Administración (si lo necesitas)
     path('admin/', admin.site.urls),
 
+
     # Usuarios
     path('login/', views.LoginAPIView.as_view(), name='login_usuario'),
     path('registro/', views.RegistrarUsuarioAPIView.as_view(), name='registro_usuario'),

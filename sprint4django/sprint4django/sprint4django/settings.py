@@ -75,6 +75,7 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'sprint4django.wsgi.application'
 
 

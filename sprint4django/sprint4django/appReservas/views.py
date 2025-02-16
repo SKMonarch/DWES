@@ -63,6 +63,7 @@ class RegistrarUsuarioAPIView(APIView):
 
 # Vistas para Eventos
 
+
 class ListarEventosAPIView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
