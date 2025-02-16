@@ -19,9 +19,9 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework.authtoken.views import ObtainAuthToken
-from appReservas import views
 from django.contrib import admin
-
+from django.contrib.auth import views as auth_views
+from appReservas import views
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -43,6 +43,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('evento/<int:evento_id>/', views.event_detail, name='event_detail'),
     path('user/panel/', views.user_panel, name='user_panel'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
     # Usuarios
     path('login/', views.LoginAPIView.as_view(), name='login_usuario'),

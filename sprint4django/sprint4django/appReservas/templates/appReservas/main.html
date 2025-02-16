@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}GAMES EVENTS{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
 </head>
 <body>
     <header>
@@ -27,7 +28,7 @@
     </main>
 
     <footer>
-        <p>&copy; 2003 Gestión de Eventos</p>
+        <p>&copy; 2023 Gestión de Eventos</p>
     </footer>
 </body>
 </html>
