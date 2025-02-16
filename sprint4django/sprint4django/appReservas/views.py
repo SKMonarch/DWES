@@ -19,15 +19,27 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.shortcuts import render, get_object_or_404,redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 
-
-
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        usuario = authenticate(request, username=username, password=password)
+        if usuario is not None:
+            login(request, usuario)
+            return redirect('index')  # Redirige a la página de inicio después del login
+        else:
+            messages.error(request, 'Usuario o contraseña incorrectos.')
+    return render(request, 'appReservas/login.html')
 def index(request):
     eventos = Evento.objects.all()
     return render(request, 'appReservas/index.html', {'eventos': eventos})
 
-
+def event_detail(request, evento_id):
+    evento = get_object_or_404(Evento, id=evento_id)
+    return render(request, 'appReservas/event_detail.html', {'evento': evento})
 @login_required
 def crear_reserva(request, evento_id):
     evento = get_object_or_404(Evento, id=evento_id)

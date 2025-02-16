@@ -42,7 +42,10 @@ urlpatterns = [
     # views dinámicas Semana4
     path('', views.index, name='index'),
     path('evento/<int:evento_id>/', views.event_detail, name='event_detail'),
+    path('reservas/crear/<int:evento_id>/', views.crear_reserva, name='crear_reserva'),
+    path('api/reservas/crear/', views.CrearReservaAPIView.as_view(), name='crear_reserva_api'),
     path('user/panel/', views.user_panel, name='user_panel'),
+    path('login/', views.LoginAPIView.as_view(), name='login_usuario'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
     # Usuarios
