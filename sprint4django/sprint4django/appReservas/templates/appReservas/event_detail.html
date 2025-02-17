@@ -10,12 +10,43 @@
     <img src="{{ evento.imagen_url }}" alt="{{ evento.titulo }}">
 
     <h3>Reservar</h3>
-   <form method="post" action="{% url 'crear_reserva' evento.id %}">
+   <form id="reservaForm">
     {% csrf_token %}
     <label for="tickets">Número de entradas:</label>
-    <input type="number" id="tickets" name="tickets" min="1" max="{{ evento.capacidad }}" required>
-    <button type="submit">Reservar</button>
-    </form>
+    <input type="number" id="tickets" name="entradas" min="1" max="{{ evento.capacidad }}" required>
+    <input type="hidden" id="evento_id" name="evento_id" value="{{ evento.id }}">
+    <button type="button" onclick="crearReserva()">Reservar</button>
+</form>
+
+<script>
+function crearReserva() {
+    const form = document.getElementById('reservaForm');
+    const formData = new FormData(form);
+    const data = {
+        evento_id: formData.get('evento_id'),
+        entradas: parseInt(formData.get('entradas'))
+    };
+
+    fetch("{% url 'crear_reserva' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.mensaje) {
+            alert(data.mensaje);
+            window.location.reload();
+        } else if (data.error) {
+            alert(data.error);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
 
     <h3>Comentarios</h3>
     <ul>

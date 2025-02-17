@@ -1,0 +1,21 @@
+{% extends 'appReservas/main.html' %}
+
+{% block title %}Iniciar Sesión - Gestión de Eventos{% endblock %}
+
+{% block content %}
+    <h2>Iniciar Sesión</h2>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    <form method="post" action="{% url 'login_usuario' %}">
+        {% csrf_token %}
+        <label for="username">Usuario:</label>
+        <input type="text" id="username" name="username" required>
+        <label for="password">Contraseña:</label>
+        <input type="password" id="password" name="password" required>
+        <button type="submit">Iniciar Sesión</button>
+    </form>
+    <p>¿No tienes una cuenta? <a href="{% url 'registro_usuario' %}">Regístrate aquí</a>.</p>
+{% endblock %}

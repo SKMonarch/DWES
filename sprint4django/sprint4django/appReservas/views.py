@@ -21,18 +21,35 @@ from django.shortcuts import render, get_object_or_404,redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-
 def login_view(request):
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         usuario = authenticate(request, username=username, password=password)
         if usuario is not None:
             login(request, usuario)
-            return redirect('index')  # Redirige a la página de inicio después del login
+            return redirect('index')
         else:
             messages.error(request, 'Usuario o contraseña incorrectos.')
     return render(request, 'appReservas/login.html')
+
+def registro_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        rol = request.POST.get('rol', 'participante')
+        if not username or not password:
+            messages.error(request, 'Todos los campos son obligatorios.')
+        else:
+            try:
+                usuario = Usuario.objects.create_user(username=username, password=password, rol=rol)
+                login(request, usuario)
+                return redirect('index')
+            except Exception as e:
+                messages.error(request, f'Error al registrar el usuario: {str(e)}')
+    return render(request, 'appReservas/registro.html')
+
 def index(request):
     eventos = Evento.objects.all()
     return render(request, 'appReservas/index.html', {'eventos': eventos})
@@ -40,31 +57,7 @@ def index(request):
 def event_detail(request, evento_id):
     evento = get_object_or_404(Evento, id=evento_id)
     return render(request, 'appReservas/event_detail.html', {'evento': evento})
-@login_required
-def crear_reserva(request, evento_id):
-    evento = get_object_or_404(Evento, id=evento_id)
 
-    if request.method == 'POST':
-        entradas = int(request.POST.get('tickets', 0))
-
-        if entradas > 0 and entradas <= evento.capacidad:
-            reserva = Reserva.objects.create(
-                usuario=request.user,
-                evento=evento,
-                entradas=entradas,
-                estado='pendiente'
-            )
-            evento.capacidad -= entradas
-            evento.save()
-            return redirect('event_detail', evento_id=evento.id)
-        else:
-            # Manejar el caso en que no haya suficientes entradas
-            return render(request, 'appReservas/event_detail.html', {
-                'evento': evento,
-                'error': 'No hay suficientes entradas disponibles.'
-            })
-
-    return redirect('event_detail', evento_id=evento.id)
 @login_required
 def user_panel(request):
     reservas = Reserva.objects.filter(usuario=request.user)
