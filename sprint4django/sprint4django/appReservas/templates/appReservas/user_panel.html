@@ -4,14 +4,38 @@
 
 {% block content %}
     <h2>Mis Reservas</h2>
-    <ul>
-        {% for reserva in reservas %}
-            <li>
-                <p>Evento: {{ reserva.evento.titulo }}</p>
-                <p>Entradas: {{ reserva.entradas }}</p>
-                <p>Estado: {{ reserva.estado }}</p>
-                <a href="{% url 'cancelar_reserva' reserva.id %}">Cancelar Reserva</a>
-            </li>
-        {% endfor %}
-    </ul>
+    {% if reservas %}
+        <ul>
+            {% for reserva in reservas %}
+                <li>
+                    <p>Evento: {{ reserva.evento.titulo }}</p>
+                    <p>Entradas: {{ reserva.entradas }}</p>
+                    <p>Estado: {{ reserva.estado }}</p>
+                    <a href="{% url 'cancelar_reserva' reserva.id %}">Cancelar Reserva</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No tienes reservas.</p>
+    {% endif %}
+<script>
+    const token = localStorage.getItem('token');
+fetch("{% url 'user_panel' %}", {
+    method: 'GET',
+    headers: {
+        'Authorization': `Token ${token}` /
+    }
+})
+.then(response => {
+    if (response.status === 401) {
+        alert("No estás autenticado. Por favor, inicia sesión.");
+        window.location.href = "{% url 'login_usuario' %}";
+    }
+    return response.json();
+})
+.then(data => {
+
+})
+.catch(error => console.error('Error:', error));
+</script>
 {% endblock %}

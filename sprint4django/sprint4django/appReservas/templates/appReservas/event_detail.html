@@ -10,43 +10,54 @@
     <img src="{{ evento.imagen_url }}" alt="{{ evento.titulo }}">
 
     <h3>Reservar</h3>
-   <form id="reservaForm">
-    {% csrf_token %}
-    <label for="tickets">Número de entradas:</label>
-    <input type="number" id="tickets" name="entradas" min="1" max="{{ evento.capacidad }}" required>
-    <input type="hidden" id="evento_id" name="evento_id" value="{{ evento.id }}">
-    <button type="button" onclick="crearReserva()">Reservar</button>
-</form>
+    <form id="reservaForm">
+        {% csrf_token %}
+        <label for="tickets">Número de entradas:</label>
+        <input type="number" id="tickets" name="entradas" min="1" max="{{ evento.capacidad }}" required>
+        <input type="hidden" id="evento_id" name="evento_id" value="{{ evento.id }}">
+        <button type="button" onclick="crearReserva()">Reservar</button>
+    </form>
 
-<script>
-function crearReserva() {
-    const form = document.getElementById('reservaForm');
-    const formData = new FormData(form);
-    const data = {
-        evento_id: formData.get('evento_id'),
-        entradas: parseInt(formData.get('entradas'))
-    };
+    <script>
+        function crearReserva() {
+            const form = document.getElementById('reservaForm');
+            const formData = new FormData(form);
+            const data = {
+                evento_id: formData.get('evento_id'),
+                entradas: parseInt(formData.get('entradas'))
+            };
 
-    fetch("{% url 'crear_reserva' %}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.mensaje) {
-            alert(data.mensaje);
-            window.location.reload();
-        } else if (data.error) {
-            alert(data.error);
+            // Recuperar el token del localStorage
+            const token = localStorage.getItem('token');
+
+            fetch("{% url 'crear_reserva' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Authorization': `Token ${token}` // Incluir el token en los headers
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    alert("No estás autenticado. Por favor, inicia sesión.");
+                    window.location.href = "{% url 'login_usuario' %}";
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.mensaje) {
+                    alert(data.mensaje);
+                    window.location.reload();
+                } else if (data.error) {
+                    alert(data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
         }
-    })
-    .catch(error => console.error('Error:', error));
-}
-</script>
+    </script>
 
     <h3>Comentarios</h3>
     <ul>
@@ -58,10 +69,50 @@ function crearReserva() {
         {% endfor %}
     </ul>
 
-    <form method="post" action="{% url 'crear_comentario' evento.id %}">
+    <form id="comentarioForm" method="post">
         {% csrf_token %}
         <label for="comment">Deja un comentario:</label>
         <textarea id="comment" name="texto" required></textarea>
-        <button type="submit">Publicar</button>
+        <button type="button" onclick="crearComentario()">Publicar</button>
     </form>
+
+    <script>
+        function crearComentario() {
+            const form = document.getElementById('comentarioForm');
+            const formData = new FormData(form);
+            const data = {
+                texto: formData.get('texto')
+            };
+
+            // Recuperar el token del localStorage
+            const token = localStorage.getItem('token');
+
+            fetch("{% url 'crear_comentario' evento.id %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Authorization': `Token ${token}` // Incluir el token en los headers
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    alert("No estás autenticado. Por favor, inicia sesión.");
+                    window.location.href = "{% url 'login_usuario' %}";
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.mensaje) {
+                    alert(data.mensaje);
+                    window.location.reload();
+                } else if (data.error) {
+                    alert(data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
 {% endblock %}
