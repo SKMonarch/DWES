@@ -18,24 +18,4 @@
     {% else %}
         <p>No tienes reservas.</p>
     {% endif %}
-<script>
-    const token = localStorage.getItem('token');
-fetch("{% url 'user_panel' %}", {
-    method: 'GET',
-    headers: {
-        'Authorization': `Token ${token}` /
-    }
-})
-.then(response => {
-    if (response.status === 401) {
-        alert("No estás autenticado. Por favor, inicia sesión.");
-        window.location.href = "{% url 'login_usuario' %}";
-    }
-    return response.json();
-})
-.then(data => {
-
-})
-.catch(error => console.error('Error:', error));
-</script>
 {% endblock %}

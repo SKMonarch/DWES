@@ -34,31 +34,40 @@
         <p>&copy; 2023 Gestión de Eventos</p>
     </footer>
 
-    <script>
-        // Verificar el estado de autenticación al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            const token = localStorage.getItem('token');
-            const nav = document.getElementById('nav');
-
-            if (token) {
-                // Si hay un token, el usuario está autenticado
-                nav.innerHTML = `
-                    <a href="{% url 'index' %}">Inicio</a>
-                    <a href="{% url 'user_panel' %}">Panel de Usuario</a>
-                    <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" style="background: none; border: none; color: white; cursor: pointer;">Cerrar Sesión</button>
-                    </form>
-                `;
-            } else {
-                // Si no hay token, el usuario no está autenticado
-                nav.innerHTML = `
-                    <a href="{% url 'index' %}">Inicio</a>
-                    <a href="{% url 'login_usuario' %}">Iniciar Sesión</a>
-                    <a href="{% url 'registro_usuario' %}">Registrarse</a>
-                `;
+   <script>
+    function logout() {
+        localStorage.removeItem('token');
+        fetch("{% url 'logout' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
             }
-        });
-    </script>
+        })
+        .then(response => {
+            window.location.href = "{% url 'index' %}";
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem('token');
+        const nav = document.getElementById('nav');
+
+        if (token) {
+            nav.innerHTML = `
+                <a href="{% url 'index' %}">Inicio</a>
+                <a href="{% url 'user_panel' %}">Panel de Usuario</a>
+                <button onclick="logout()" style="background: none; border: none; color: white; cursor: pointer;">Cerrar Sesión</button>
+            `;
+        } else {
+            nav.innerHTML = `
+                <a href="{% url 'index' %}">Inicio</a>
+                <a href="{% url 'login_usuario' %}">Iniciar Sesión</a>
+                <a href="{% url 'registro_usuario' %}">Registrarse</a>
+            `;
+        }
+    });
+</script>
+
 </body>
 </html>

@@ -38,7 +38,6 @@ def user_panel(request):
     reservas = Reserva.objects.filter(usuario=request.user)
     return render(request, 'appReservas/user_panel.html', {'reservas': reservas})
 
-# Permisos personalizados
 class EsOrganizador(BasePermission):
     def has_permission(self, request, view):
         return request.user.rol == 'organizador'
