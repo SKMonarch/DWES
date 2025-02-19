@@ -44,6 +44,7 @@ urlpatterns = [
     path('evento/<int:evento_id>/', views.event_detail, name='event_detail'),
     path('reservas/crear/', views.CrearReservaAPIView.as_view(), name='crear_reserva'),
     path('user/panel/', views.user_panel, name='user_panel'),
+    path('reservas/', views.ListarReservasAPIView.as_view(), name='listar_reservas'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
     # Usuarios

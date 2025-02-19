@@ -4,22 +4,54 @@
 
 {% block content %}
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem('token');
 
+        if (!token) {
+            alert("No estás autenticado. Por favor, inicia sesión.");
+            window.location.href = "{% url 'login_usuario' %}";
+            return;
+        }
+
+
+        fetch("{% url 'listar_reservas' %}", {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Token ${token}`
+            }
+        })
+        .then(response => {
+            if (response.status === 401) {
+                alert("No estás autenticado. Por favor, inicia sesión.");
+                window.location.href = "{% url 'login_usuario' %}";
+                return;
+            }
+            return response.json();
+        })
+        .then(data => {
+            const reservasList = document.getElementById('reservas-list');
+            if (data.length > 0) {
+                data.forEach(reserva => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <p>Evento: ${reserva.evento}</p>
+                        <p>Entradas: ${reserva.entradas}</p>
+                        <p>Estado: ${reserva.estado}</p>
+                        <a href="/reservas/${reserva.id}/cancelar/">Cancelar Reserva</a>
+                    `;
+                    reservasList.appendChild(li);
+                });
+            } else {
+                reservasList.innerHTML = '<p>No tienes reservas.</p>';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
 </script>
 
-    <h2>Mis Reservas</h2>
-    {% if reservas %}
-        <ul>
-            {% for reserva in reservas %}
-                <li>
-                    <p>Evento: {{ reserva.evento.titulo }}</p>
-                    <p>Entradas: {{ reserva.entradas }}</p>
-                    <p>Estado: {{ reserva.estado }}</p>
-                    <a href="{% url 'cancelar_reserva' reserva.id %}">Cancelar Reserva</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No tienes reservas.</p>
-    {% endif %}
+<h2>Mis Reservas</h2>
+<ul id="reservas-list">
+
+</ul>
 {% endblock %}
