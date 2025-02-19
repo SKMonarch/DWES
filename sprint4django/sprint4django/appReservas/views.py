@@ -32,14 +32,8 @@ def index(request):
 def event_detail(request, evento_id):
     evento = get_object_or_404(Evento, id=evento_id)
     return render(request, 'appReservas/event_detail.html', {'evento': evento})
-
-from django.contrib import messages
-
-
-@login_required
 def user_panel(request):
-    reservas = Reserva.objects.filter(usuario=request.user)
-    return render(request, 'appReservas/user_panel.html', {'reservas': reservas})
+    return render(request, 'appReservas/user_panel.html')
 
 class EsOrganizador(BasePermission):
     def has_permission(self, request, view):

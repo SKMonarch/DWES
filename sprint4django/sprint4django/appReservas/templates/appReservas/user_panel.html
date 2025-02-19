@@ -4,36 +4,9 @@
 
 {% block content %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    form.addEventListener('submit', function(event) {
-        event.preventDefault();
 
-        const formData = new FormData(form);
-        const data = {
-            username: formData.get('username'),
-            password: formData.get('password')
-        };
-
-       fetch("{% url 'login_usuario' %}", {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': '{{ csrf_token }}'
-    },
-    body: JSON.stringify(data)
-})
-.then(response => response.json())
-.then(data => {
-    if (data.token) {
-        localStorage.setItem('token', data.token);
-        window.location.href = "{% url 'user_panel' %}";  // Redirige al panel de usuario
-    } else if (data.error) {
-        alert(data.error);
-    }
-})
-.catch(error => console.error('Error:', error));
 </script>
+
     <h2>Mis Reservas</h2>
     {% if reservas %}
         <ul>
